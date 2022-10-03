@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,21 +8,34 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import { BotonCalc } from "./components/BotonCalc";
-import { useState } from "react";
-import { number } from "yup/lib/locale";
 
 export const CalcularPropina = () => {
   const [bill, setBill] = useState("200");
   const [numberPerson, setNumberPerson] = useState("5");
   const [tipAmount, setTipAmount] = useState("0");
   const [total, setTotal] = useState("0");
+  const [porcentaje, setPorcentaje] = useState("%");
 
-  const calcular = () => {
-    const calcularTipNumber = (Number(bill) * 0.05) / Number(numberPerson);
+  const calcular = (porcentajeDecimal: number) => {
+    const calcularTipNumber: number =
+      (Number(bill) * porcentajeDecimal) / Number(numberPerson);
     setTipAmount(String(calcularTipNumber));
 
-    const multiOfBill = Number(bill) * 0.05;
+    const multiOfBill: number = Number(bill) * porcentajeDecimal;
+
+    const calcularTotal: number =
+      (Number(bill) + multiOfBill) / Number(numberPerson);
+    setTotal(String(calcularTotal));
+  };
+  const calcularCustom = (porcentajeCustom: string) => {
+    const custom = porcentajeCustom.substring(0, porcentajeCustom.length - 1);
+    const CustomDecimal = Number(custom) / 100;
+
+    const calcularTipNumber =
+      (Number(bill) * CustomDecimal) / Number(numberPerson);
+    setTipAmount(String(calcularTipNumber));
+
+    const multiOfBill = Number(bill) * CustomDecimal;
 
     const calcularTotal = (Number(bill) + multiOfBill) / Number(numberPerson);
     setTotal(String(calcularTotal));
@@ -47,19 +61,66 @@ export const CalcularPropina = () => {
           />
         </View>
         <Text style={styles.text}>Select Tip %</Text>
-        <View style={styles.containerFilas}>
-          <View style={styles.fila}>
-            <BotonCalc text="5%" accion={calcular} />
-            <BotonCalc text="10%" accion={calcular} />
-          </View>
-          <View style={styles.fila}>
-            <BotonCalc text="15%" accion={calcular} />
-            <BotonCalc text="25%" accion={calcular} />
-          </View>
-          <View style={styles.fila}>
-            <BotonCalc text="50%" accion={calcular} />
-            <BotonCalc text="Custom" accion={calcular} />
-          </View>
+        <View style={styles.fila}>
+          <TouchableOpacity onPress={() => calcular(0.05)}>
+            <View style={styles.boton}>
+              <TextInput
+                style={styles.botonTexto}
+                editable={false}
+                value={"5%"}
+              />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => calcular(0.1)}>
+            <View style={styles.boton}>
+              <TextInput
+                style={styles.botonTexto}
+                editable={false}
+                value={"10%"}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.fila}>
+          <TouchableOpacity onPress={() => calcular(0.15)}>
+            <View style={styles.boton}>
+              <TextInput
+                style={styles.botonTexto}
+                editable={false}
+                value={"15%"}
+              />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => calcular(0.25)}>
+            <View style={styles.boton}>
+              <TextInput
+                style={styles.botonTexto}
+                editable={false}
+                value={"25%"}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.fila}>
+          <TouchableOpacity onPress={() => calcular(0.5)}>
+            <View style={styles.boton}>
+              <TextInput
+                style={styles.botonTexto}
+                editable={false}
+                value={"50%"}
+              />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => calcularCustom(porcentaje)}>
+            <View style={styles.botonCustom}>
+              <TextInput
+                style={styles.inputCustom}
+                onChangeText={(e) => setPorcentaje(e)}
+                value={porcentaje}
+                keyboardType="numeric"
+              />
+            </View>
+          </TouchableOpacity>
         </View>
         <Text style={styles.text}>Number of People</Text>
         <View style={styles.bill}>
@@ -89,7 +150,12 @@ export const CalcularPropina = () => {
             <Text style={styles.textPerson}>/ person</Text>
             <TextInput style={styles.inputEnd} value={total} editable={false} />
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setTipAmount("0");
+              setTotal("0");
+            }}
+          >
             <View style={styles.btn}>
               <Text style={styles.btnText}>Reset</Text>
             </View>
@@ -139,6 +205,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     margin: 10,
   },
+  boton: {
+    backgroundColor: "hsl(183, 100%, 15%)",
+    borderRadius: 10,
+    height: 50,
+    width: 170,
+    justifyContent: "center",
+    marginHorizontal: 10,
+  },
+  botonTexto: {
+    textAlign: "center",
+    padding: 10,
+    fontSize: 25,
+    color: "white",
+  },
   input: {
     flex: 1,
     textAlign: "right",
@@ -148,12 +228,24 @@ const styles = StyleSheet.create({
     margin: 15,
     height: "100%",
   },
+  inputCustom: {
+    textAlign: "center",
+    fontSize: 25,
+    fontWeight: "bold",
+  },
+
+  botonCustom: {
+    backgroundColor: "hsl(189, 41%, 97%)",
+    borderRadius: 10,
+    height: 55,
+    width: 170,
+    justifyContent: "center",
+    marginHorizontal: 10,
+  },
   imageStyle: {
     margin: 5,
     height: 17,
     width: 14,
-    resizeMode: "stretch",
-    alignItems: "center",
   },
   fila: {
     flexDirection: "row",
